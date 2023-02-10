@@ -1,59 +1,73 @@
 //внутренние данные для таблицы
 var carsData = []
 
-//ЗАПРОС на получение данных
-//...
-//данные которые должны приходить с сервера
-const reqData = [
-    { name: "LADA", reg_plate: "А183СМ82", sts: '8225725410'},
-    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '2'},
-    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '3'},
-    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '4'},
-    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '5'},
-    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '6'},
-]
+// const reqData = [
+//     { name: "LADA", reg_plate: "А183СМ82", sts: '8225725410'},
+//     { name: "LADA", reg_plate: "А183СМ82", sts: '8225725410'},
+// ]
 
-setTimeout(() => {
-    document.querySelector('#loader')?.classList.add('d-none')
+//Получить данные
+const url = "https://fines.naveoapps.ru/wialon.php?user_name=alk-spb%40yandex.ru&access_token=4ca372de99f11361de6d499caafcafbe6C3660739CDD084BC99382B4EB26F27B566FF497";
 
-    if (reqData.length) {
-        document.querySelector('#cars-table')?.classList.remove('d-none');
-        carsData = reqData.map((el, inx) => {
-            return {
-                ...el, 
-                id: inx + 1,
-                checked: true,
-                edit: false
-            }
-        });
-        addToTable(carsData);
-        setEventListeners()
-    } else {
-        document.querySelector('#no-data-text')?.classList.remove('d-none')
+var xhrGetCars = new XMLHttpRequest();
+xhrGetCars.open("GET", url);
+
+xhrGetCars.setRequestHeader("Accept", "application/json");
+xhrGetCars.setRequestHeader("Content-Type", "application/json");
+
+xhrGetCars.onreadystatechange = function () {
+if (xhrGetCars.readyState === 4) {
+    if (xhrGetCars.status === 200) {
+        const reqData = JSON.parse(xhrGetCars.responseText)
+        console.log(reqData);
+        document.querySelector('#loader')?.classList.add('d-none')
+
+        if (reqData.length) {
+            document.querySelector('#cars-table')?.classList.remove('d-none');
+            carsData = reqData.map((el, inx) => {
+                return {
+                    ...el, 
+                    id: inx + 1,
+                    checked: true,
+                    edit: false
+                }
+            });
+            addToTable(carsData);
+            setEventListeners()
+        } else {
+            document.querySelector('#no-data-text')?.classList.remove('d-none')
+        }
     }
-}, 1000);
+}};
+
+xhrGetCars.send();
 
 
 //functions
 function getTableRowTemplate(id, name, reg, sts) { 
     return `
-    <tr class="car-table-row">
+    <tr class="main-row" data-id="${id}">
         <td class="p-0 pe-2">
             <div class="form-check form-check-sm form-check-custom form-check-solid">
                 <input class="car-checkbox form-check-input" type="checkbox" data-id="${id}" checked />
             </div>
         </td>
         <td class="p-0 pe-2">
-            <input type="text" class="car-name form-control border-0" placeholder="Название" value="${name}" readonly data-id="${id}">
+            <input type="text" class="car-name form-control border-0" value="${name}" readonly data-id="${id}">
         </td>
         <td class="p-0 pe-2">
-            <input type="text" class="car-reg_plate form-control border-0" placeholder="Название" value="${reg}" readonly data-id="${id}">
+            <input type="text" class="car-reg_plate form-control border-0" value="${reg}" readonly data-id="${id}">
         </td>
         <td class="p-0 pe-2">
-            <input type="text" class="car-sts form-control border-0" placeholder="Название" value="${sts}" readonly data-id="${id}">
+            <input type="text" class="car-sts form-control border-0" value="${sts}" readonly data-id="${id}">
         </td>
         <td class="pe-0 text-end">
             <button class="btn btn-light fw-boldest btn-sm px-5 car-btn" data-id="${id}">Редактировать</button>
+        </td>
+    </tr>
+    <tr class="info-row d-none" data-id="${id}">
+        <td colspan="5">
+            <div class="info ps-19"></div>
         </td>
     </tr>
     `
@@ -131,25 +145,34 @@ function setTableListeners() {
 function penaltyRequestHandler() {
     const sendData = carsData.filter(car => car.checked).map(el => {
         return {
-            req_plate: el.reg_plate,
+            reg_plate: el.reg_plate,
             sts: el.sts
         }
     })
     console.log(sendData);
     if (sendData.length) {
-        //ЗАПРОС на отправку данных для проверки
-        var url = "https://fines.naveoapps.ru/fines.php";
-
+        //ЗАПРОС на отправку данных для проверки штрафов
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", url);
+        xhr.open("POST", "https://fines.naveoapps.ru/fines.php");
 
         xhr.setRequestHeader("Accept", "application/json");
         xhr.setRequestHeader("Content-Type", "application/json");
 
         xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
-            console.log(xhr.status);
-            console.log(xhr.responseText);
+            if (xhr.status === 200) {
+                const res = JSON.parse(xhr.responseText)
+                carsData.filter(car => car.checked).forEach((el, inx) => {
+                    if (res.length > inx) {
+                        document.querySelector(`.main-row[data-id='${el.id}']`).classList.add('border-bottom-0')
+                        const row = document.querySelector(`.info-row[data-id='${el.id}']`)
+                        row.classList.remove('d-none')
+                        if (res[inx].status === 200)
+                            row.querySelector('.info').innerHTML = `Количество штрафов: ${res[inx].num}, ${res[inx].message}`
+                        else row.querySelector('.info').innerHTML = res[inx].message
+                    }
+                });
+            }
         }};
 
         xhr.send(JSON.stringify(sendData));
