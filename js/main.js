@@ -66,7 +66,7 @@ function getTableRowTemplate(id, name, reg, sts) {
         </td>
     </tr>
     <tr class="info-row d-none" data-id="${id}">
-        <td colspan="5">
+        <td colspan="5" class="p-0">
             <div class="info ps-19"></div>
         </td>
     </tr>
@@ -118,15 +118,33 @@ function setTableListeners() {
                 });
 
                 //ЗАПРОС на обновление данных
-                const reqData = carsData.map(el => {
-                    return {
-                        name: el.name,
-                        req_plate: el.reg_plate,
-                        sts: el.sts
-                    }
-                });
+                const reqData = {
+                    login: 'alk-spb@yandex.ru',
+                    cars: carsData.map(el => {
+                        return {
+                            name: el.name,
+                            reg_plate: el.reg_plate,
+                            sts: el.sts
+                        }
+                    })
+                }
+                
                 console.log('update data', reqData);
-                //...
+
+                const xhrUpdate = new XMLHttpRequest();
+                xhrUpdate.open("POST", "https://fines.naveoapps.ru/updateCars.php");
+
+                xhrUpdate.setRequestHeader("Accept", "application/json");
+                xhrUpdate.setRequestHeader("Content-Type", "application/json");
+
+                xhrUpdate.onreadystatechange = function () {
+                if (xhrUpdate.readyState === 4) {
+                    if (xhrUpdate.status === 200) {
+                        console.log('updates successfully', xhrUpdate.responseText);
+                    }
+                }};
+
+                xhrUpdate.send(JSON.stringify(reqData));
             }
         })    
     );
@@ -168,8 +186,8 @@ function penaltyRequestHandler() {
                         const row = document.querySelector(`.info-row[data-id='${el.id}']`)
                         row.classList.remove('d-none')
                         if (res[inx].status === 200)
-                            row.querySelector('.info').innerHTML = `Количество штрафов: ${res[inx].num}, ${res[inx].message}`
-                        else row.querySelector('.info').innerHTML = res[inx].message
+                            row.querySelector('.info').innerHTML = `Количество штрафов: ${res[inx].num}. ${res[inx].message}`
+                        else row.querySelector('.info').innerHTML = 'Ошибка: ' + res[inx].message
                     }
                 });
             }
