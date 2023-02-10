@@ -9,6 +9,7 @@
 		<link rel="shortcut icon" href="./assets/favicon.ico" />
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,600,700" />
 		<link href="./css/style.bundle.css" rel="stylesheet" type="text/css" />
+		<link rel="stylesheet" href="./css/custom.css">
 	</head>
 	<body id="kt_body" class="header-fixed header-tablet-and-mobile-fixed aside-fixed aside-secondary-disabled">
 		<!--begin::Page-->
@@ -128,50 +129,35 @@
 							</div>
 							<!--end::Header-->
 
+							<div id="loader" class="loader m-auto mb-10"></div>
 							<!--begin::Body-->
-							<div class="card-body py-0">
+							<div id="cars-table" class="card-body py-0 d-none">
 								<!--begin::Table responsive-->
 								<div class="table-responsive">
 									<!--begin::Table-->
 									<table class="table align-middle table-row-bordered table-row-dashed gy-5" id="kt_table_widget_1">
-										<tbody>
+										<tbody id="cars-table-body">
 											<tr class="text-start text-gray-400 fw-boldest fs-7 text-uppercase">
 												<th class="w-20px ps-0">
 													<div class="form-check form-check-sm form-check-custom form-check-solid me-5">
-														<input class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#kt_table_widget_1 .form-check-input" value="1" />
+														<input id="allChecked" class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#kt_table_widget_1 .form-check-input" value="1" />
 													</div>
 												</th>
-												<th class="min-w-200px px-0">Название</th>
-												<th class="min-w-125px">Регистационный номер</th>
-												<th class="min-w-125px">Sts</th>
+												<th class="min-w-200px ps-3">Название</th>
+												<th class="min-w-125px ps-3">Регистационный номер</th>
+												<th class="min-w-125px ps-3">Sts</th>
 												<th class="text-end pe-2 min-w-70px">Действие</th>
-											</tr>
-											<tr>
-												<td class="p-0">
-													<div class="form-check form-check-sm form-check-custom form-check-solid">
-														<input class="form-check-input" type="checkbox" value="1" />
-													</div>
-												</td>
-												<td class="p-0">
-													<span class="text-gray-800 fw-boldest fs-5 mb-1">LADA К028РУ198</span>
-												</td>
-												<td>
-													<span class="text-gray-800 fw-boldest fs-5 mb-1">К028РУ198</span>
-												</td>
-												<td>
-													<span class="text-gray-800 fw-boldest fs-5 mb-1">К028РУ198</span>
-												</td>
-												<td class="pe-0 text-end">
-													<button class="btn btn-light text-muted fw-boldest btn-sm px-5">Редактировать</button>
-												</td>
 											</tr>
 										</tbody>
 									</table>
 									<!--end::Table-->
 								</div>
 								<!--end::Table responsive-->
+								<button id="sendRequest" class="btn btn-primary d-block m-auto mb-4">Проверить штрафы</button>
 							</div>
 							<!--end::Body-->
+
+							<h3 id="no-data-text" class="text-center text-gray-800 mb-10 d-none">Нет данных</h3>
 
 						</div>
 						<!--end::Главная таблица-->
@@ -185,6 +171,7 @@
 		<!--end::Page-->
 
 		<!--begin::Javascript-->
+		<script src="./js/main.js"></script>
 		<script src="./js/plugins.bundle.js"></script>
 		<script src="./js/scripts.bundle.js"></script>
 		<!--end::Javascript-->
