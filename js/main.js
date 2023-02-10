@@ -5,12 +5,12 @@ var carsData = []
 //...
 //данные которые должны приходить с сервера
 const reqData = [
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '1'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '2'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '3'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '4'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '5'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '6'},
+    { name: "LADA", reg_plate: "А183СМ82", sts: '8225725410'},
+    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '2'},
+    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '3'},
+    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '4'},
+    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '5'},
+    // { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '6'},
 ]
 
 setTimeout(() => {
@@ -77,19 +77,7 @@ function setEventListeners() {
     });
 
     //send btn
-    document.querySelector('#sendRequest').addEventListener('click', () => {
-        const sendData = carsData.filter(car => car.checked).map(el => {
-                return {
-                    name: el.name,
-                    req_plate: el.reg_plate,
-                    sts: el.sts
-                }
-            })
-        console.log(sendData);
-        if (sendData.length) {
-            //ЗАПРОС на отправку данных для проверки
-        }
-    });
+    document.querySelector('#sendRequest').addEventListener('click', penaltyRequestHandler);
 }
 
 function setTableListeners() {
@@ -138,4 +126,32 @@ function setTableListeners() {
             }
         })
     );
+}
+
+function penaltyRequestHandler() {
+    const sendData = carsData.filter(car => car.checked).map(el => {
+        return {
+            req_plate: el.reg_plate,
+            sts: el.sts
+        }
+    })
+    console.log(sendData);
+    if (sendData.length) {
+        //ЗАПРОС на отправку данных для проверки
+        var url = "https://fines.naveoapps.ru/fines.php";
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url);
+
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+            console.log(xhr.status);
+            console.log(xhr.responseText);
+        }};
+
+        xhr.send(JSON.stringify(sendData));
+    }
 }
