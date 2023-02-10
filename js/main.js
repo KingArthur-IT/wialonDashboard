@@ -1,4 +1,9 @@
-//data
+//внутренние данные для таблицы
+var carsData = []
+
+//ЗАПРОС на получение данных
+//...
+//данные которые должны приходить с сервера
 const reqData = [
     { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '1'},
     { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '2'},
@@ -7,12 +12,7 @@ const reqData = [
     { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '5'},
     { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '6'},
 ]
-var carsData = []
-const perPage = 5
-let pageIndex = 1
-let pageCount = 0
 
-//data loading
 setTimeout(() => {
     document.querySelector('#loader')?.classList.add('d-none')
 
@@ -22,20 +22,12 @@ setTimeout(() => {
             return {
                 ...el, 
                 id: inx + 1,
-                checked: false,
+                checked: true,
                 edit: false
             }
         });
-        const elStart = (pageIndex - 1) * perPage
-        const elEnd = pageIndex * perPage
-        addToTable(carsData.slice(elStart, elEnd));
+        addToTable(carsData);
         setEventListeners()
-        if (carsData.length > perPage) {
-            document.querySelector('#pagination').classList.remove('d-none')
-            pageCount = Math.ceil(carsData.length / perPage)
-            document.querySelector('#pagination-count').innerHTML = pageCount
-            setPagination()
-        }
     } else {
         document.querySelector('#no-data-text')?.classList.remove('d-none')
     }
@@ -48,7 +40,7 @@ function getTableRowTemplate(id, name, reg, sts) {
     <tr class="car-table-row">
         <td class="p-0 pe-2">
             <div class="form-check form-check-sm form-check-custom form-check-solid">
-                <input class="car-checkbox form-check-input" type="checkbox" data-id="${id}" />
+                <input class="car-checkbox form-check-input" type="checkbox" data-id="${id}" checked />
             </div>
         </td>
         <td class="p-0 pe-2">
@@ -68,10 +60,8 @@ function getTableRowTemplate(id, name, reg, sts) {
 }
 
 function addToTable(tableData) {
-    const table = document.getElementById('cars-table-body');
-    table.querySelectorAll('.car-table-row').forEach(el => el.remove())
-    document.querySelector('#allChecked').checked = false
-    carsData.forEach(car => car.checked = false)
+    const table = document.getElementById('cars-table-body')
+    document.querySelector('#allChecked').checked = true
     tableData.forEach((d) => {
         table.insertAdjacentHTML('beforeend', getTableRowTemplate(d.id, d.name, d.reg_plate, d.sts))
     })
@@ -81,11 +71,8 @@ function addToTable(tableData) {
 function setEventListeners() {
     //all checked
     document.querySelector('#allChecked').addEventListener('input', (el) => {
-        const elStart = (pageIndex - 1) * perPage
-        const elEnd = pageIndex * perPage
-        carsData.forEach((car, inx) => {
-            if (inx >= elStart && inx < elEnd) 
-                car.checked = el.target.checked
+        carsData.forEach((car) => {
+            car.checked = el.target.checked
         })
     });
 
@@ -100,7 +87,7 @@ function setEventListeners() {
             })
         console.log(sendData);
         if (sendData.length) {
-            //send request
+            //ЗАПРОС на отправку данных для проверки
         }
     });
 }
@@ -127,15 +114,17 @@ function setTableListeners() {
                     document.querySelector(`input.car-${item}[data-id='${id}']`).setAttribute('readonly', true)
                     carsData[id - 1][item] = document.querySelector(`input.car-${item}[data-id='${id}']`).value
                 });
-                //send request to save
-                console.log('update data');
-                // carsData.map(el => {
-                //     return {
-                //         name: el.name,
-                //         req_plate: el.reg_plate,
-                //         sts: el.sts
-                //     }
-                // })
+
+                //ЗАПРОС на обновление данных
+                const reqData = carsData.map(el => {
+                    return {
+                        name: el.name,
+                        req_plate: el.reg_plate,
+                        sts: el.sts
+                    }
+                });
+                console.log('update data', reqData);
+                //...
             }
         })    
     );
@@ -149,26 +138,4 @@ function setTableListeners() {
             }
         })
     );
-}
-
-function setPagination() {
-    document.querySelector('#pagination-left').addEventListener('click', () => {
-        if (pageIndex > 1) {
-            pageIndex --
-            document.querySelector('#pagination-current').innerHTML = pageIndex
-            const elStart = (pageIndex - 1) * perPage
-            const elEnd = pageIndex * perPage
-            addToTable(carsData.slice(elStart, elEnd));
-        }
-    });
-
-    document.querySelector('#pagination-right').addEventListener('click', () => {
-        if (pageIndex < pageCount) {
-            pageIndex ++
-            document.querySelector('#pagination-current').innerHTML = pageIndex
-            const elStart = (pageIndex - 1) * perPage
-            const elEnd = pageIndex * perPage
-            addToTable(carsData.slice(elStart, elEnd));
-        }
-    })
 }
