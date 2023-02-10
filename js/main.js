@@ -1,10 +1,16 @@
 //data
 const reqData = [
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '123'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '123'},
-    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '123'},
+    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '1'},
+    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '2'},
+    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '3'},
+    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '4'},
+    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '5'},
+    { name: "LADA К028РУ198", reg_plate: "К028РУ198", sts: '6'},
 ]
 var carsData = []
+const perPage = 5
+let pageIndex = 1
+let pageCount = 0
 
 //data loading
 setTimeout(() => {
@@ -20,8 +26,16 @@ setTimeout(() => {
                 edit: false
             }
         });
-        addToTable(carsData);
-        setEventListeners();
+        const elStart = (pageIndex - 1) * perPage
+        const elEnd = pageIndex * perPage
+        addToTable(carsData.slice(elStart, elEnd));
+        setEventListeners()
+        if (carsData.length > perPage) {
+            document.querySelector('#pagination').classList.remove('d-none')
+            pageCount = Math.ceil(carsData.length / perPage)
+            document.querySelector('#pagination-count').innerHTML = pageCount
+            setPagination()
+        }
     } else {
         document.querySelector('#no-data-text')?.classList.remove('d-none')
     }
@@ -31,7 +45,7 @@ setTimeout(() => {
 //functions
 function getTableRowTemplate(id, name, reg, sts) { 
     return `
-    <tr>
+    <tr class="car-table-row">
         <td class="p-0 pe-2">
             <div class="form-check form-check-sm form-check-custom form-check-solid">
                 <input class="car-checkbox form-check-input" type="checkbox" data-id="${id}" />
@@ -55,12 +69,43 @@ function getTableRowTemplate(id, name, reg, sts) {
 
 function addToTable(tableData) {
     const table = document.getElementById('cars-table-body');
-    tableData.forEach((d, inx) => {
-        table.insertAdjacentHTML('beforeend', getTableRowTemplate(inx + 1, d.name, d.reg_plate, d.sts))
+    table.querySelectorAll('.car-table-row').forEach(el => el.remove())
+    document.querySelector('#allChecked').checked = false
+    carsData.forEach(car => car.checked = false)
+    tableData.forEach((d) => {
+        table.insertAdjacentHTML('beforeend', getTableRowTemplate(d.id, d.name, d.reg_plate, d.sts))
     })
+    setTableListeners()
 }
 
 function setEventListeners() {
+    //all checked
+    document.querySelector('#allChecked').addEventListener('input', (el) => {
+        const elStart = (pageIndex - 1) * perPage
+        const elEnd = pageIndex * perPage
+        carsData.forEach((car, inx) => {
+            if (inx >= elStart && inx < elEnd) 
+                car.checked = el.target.checked
+        })
+    });
+
+    //send btn
+    document.querySelector('#sendRequest').addEventListener('click', () => {
+        const sendData = carsData.filter(car => car.checked).map(el => {
+                return {
+                    name: el.name,
+                    req_plate: el.reg_plate,
+                    sts: el.sts
+                }
+            })
+        console.log(sendData);
+        if (sendData.length) {
+            //send request
+        }
+    });
+}
+
+function setTableListeners() {
     //edit btn
     document.querySelectorAll('.car-btn').forEach(btnEl => 
         btnEl.addEventListener('click', () => {
@@ -83,6 +128,7 @@ function setEventListeners() {
                     carsData[id - 1][item] = document.querySelector(`input.car-${item}[data-id='${id}']`).value
                 });
                 //send request to save
+                console.log('update data');
                 // carsData.map(el => {
                 //     return {
                 //         name: el.name,
@@ -103,24 +149,26 @@ function setEventListeners() {
             }
         })
     );
+}
 
-    //all checked
-    document.querySelector('#allChecked').addEventListener('input', (el) => {
-        carsData.forEach(car => car.checked = el.target.checked)
-    });
-
-    //send btn
-    document.querySelector('#sendRequest').addEventListener('click', () => {
-        const sendData = carsData.filter(car => car.checked).map(el => {
-                return {
-                    name: el.name,
-                    req_plate: el.reg_plate,
-                    sts: el.sts
-                }
-            })
-        console.log(sendData);
-        if (sendData.length) {
-            //send request
+function setPagination() {
+    document.querySelector('#pagination-left').addEventListener('click', () => {
+        if (pageIndex > 1) {
+            pageIndex --
+            document.querySelector('#pagination-current').innerHTML = pageIndex
+            const elStart = (pageIndex - 1) * perPage
+            const elEnd = pageIndex * perPage
+            addToTable(carsData.slice(elStart, elEnd));
         }
     });
+
+    document.querySelector('#pagination-right').addEventListener('click', () => {
+        if (pageIndex < pageCount) {
+            pageIndex ++
+            document.querySelector('#pagination-current').innerHTML = pageIndex
+            const elStart = (pageIndex - 1) * perPage
+            const elEnd = pageIndex * perPage
+            addToTable(carsData.slice(elStart, elEnd));
+        }
+    })
 }
