@@ -11,10 +11,12 @@ const passwordInput = passwordGroup.querySelector('input')
 signInBtn.addEventListener('click', (e) => {
     e.preventDefault()
 
+    let hasErrors = false
+
     if (!emailValidator.test(emailInput.value)) {
         emailGroup.querySelector('.invalid-feedback').classList.add('d-block')
         emailInput.classList.add('is-invalid')
-        return
+        hasErrors = true
     } else {
         emailGroup.querySelector('.invalid-feedback').classList.remove('d-block')
         emailInput.classList.remove('is-invalid')
@@ -23,11 +25,13 @@ signInBtn.addEventListener('click', (e) => {
     if (!passwordRegex.test(passwordInput.value)) {
         passwordGroup.querySelector('.invalid-feedback').classList.add('d-block')
         passwordInput.classList.add('is-invalid')
-        return
+        hasErrors = true
     } else {
         passwordGroup.querySelector('.invalid-feedback').classList.remove('d-block')
         passwordInput.classList.remove('is-invalid')
     }
+
+    if (hasErrors) return
 
     signInBtn.querySelector('.indicator-label').classList.add('d-none')
     signInBtn.querySelector('.indicator-progress').classList.add('d-block')
