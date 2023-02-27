@@ -12,6 +12,7 @@ signInBtn.addEventListener('click', (e) => {
     e.preventDefault()
 
     let hasErrors = false
+    document.querySelector('#loginError').classList.remove('d-block')
 
     if (!emailValidator.test(emailInput.value)) {
         emailGroup.querySelector('.invalid-feedback').classList.add('d-block')
@@ -37,11 +38,33 @@ signInBtn.addEventListener('click', (e) => {
     signInBtn.querySelector('.indicator-progress').classList.add('d-block')
 
     //отправка данных на сервер
-    //passwordInput.value
-    //emailInput.value
+    const sendData = {
+        username: emailInput.value,
+        password: passwordInput.value
+    }
 
-    setTimeout(() => {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://fines.naveoapps.ru/do_login.php");
+
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
         signInBtn.querySelector('.indicator-label').classList.remove('d-none')
         signInBtn.querySelector('.indicator-progress').classList.remove('d-block')
-    }, 2000);
+
+        if (xhr.status === 200) {
+            console.log('res = ', xhr.responseText);
+            if (xhr.responseText.includes('Ошибка')) {
+                document.querySelector('#loginError').classList.add('d-block')
+                document.querySelector('#loginError').innerHTML = xhr.responseText
+            } else {
+                const res = JSON.parse(xhr.responseText)
+                console.log(xhr.responseText, res);
+            }
+        }
+    }};
+
+    xhr.send(JSON.stringify(sendData));
 })

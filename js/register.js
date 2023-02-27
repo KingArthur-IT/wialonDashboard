@@ -19,9 +19,10 @@ rigisterBtn.addEventListener('click', (e) => {
     e.preventDefault()
 
     let hasErrors = false
+    document.querySelector('#regError').classList.remove('d-block')
 
     //name
-    if (nameInput.value.length < 6) {
+    if (nameInput.value.length < 5) {
         nameGroup.querySelector('.invalid-feedback').classList.add('d-block')
         nameInput.classList.add('is-invalid')
         hasErrors = true
@@ -76,12 +77,34 @@ rigisterBtn.addEventListener('click', (e) => {
     rigisterBtn.querySelector('.indicator-progress').classList.add('d-block')
 
     //отправка данных на сервер
-    //passwordInput.value
-    //emailInput.value
-    //nameInput.value
+    const sendData = {
+        name: nameInput.value,
+        username: emailInput.value,
+        password: passwordInput.value
+    }
 
-    setTimeout(() => {
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://fines.naveoapps.ru/do_register.php");
+
+    xhr.setRequestHeader("Accept", "application/json");
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
         rigisterBtn.querySelector('.indicator-label').classList.remove('d-none')
         rigisterBtn.querySelector('.indicator-progress').classList.remove('d-block')
-    }, 2000);
+
+        if (xhr.status === 200) {
+            console.log('res = ', xhr.responseText);
+            if (xhr.responseText.includes('Ошибка')) {
+                document.querySelector('#regError').classList.add('d-block')
+                document.querySelector('#regError').innerHTML = xhr.responseText
+            } else {
+                const res = JSON.parse(xhr.responseText)
+                console.log(xhr.responseText, res);
+            }
+        }
+    }};
+
+    xhr.send(JSON.stringify(sendData));
 })
